@@ -6,7 +6,7 @@ router.get("/register", (req,res) => {
     res.render("register");
 });
 router.get("/login", (req,res) => {
-    res.render("login");
+    res.sendFile("login");
 });
 router.get("/forgetPassword", (req,res) => {
     // const token = req.query.token;
