@@ -20,7 +20,30 @@
         <br>
         <input type="password" name="password" placeholder="Enter password" required>
         <br><br>
-        <button type="submit">Sign up</button>
+        <button id="button-trigger" type="submit">Sign up</button>
     </form>
+    <div id="register-notifications"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = io();
+
+        socket.on('notification', data => {
+            const divIoNotif = document.getElementById('register-notifications');
+            const createParagraph = document.createElement('p');
+            createParagraph.innerText = data;
+
+            divIoNotif.appendChild(createParagraph);
+            // setTimeout(() => {
+            //     window.location.replace('/login')
+            // }, 3000);
+        });
+
+        const buttonTrigger = document.getElementById('button-trigger');
+        buttonTrigger.addEventListener('click', () => {
+            socket.emit('sendNotification', 'Berhasil Register');
+            e.preventDefault();
+        });
+    </script>
 </body>
 </html>

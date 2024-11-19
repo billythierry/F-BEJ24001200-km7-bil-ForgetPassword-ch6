@@ -19,7 +19,30 @@
         <br>
         <a href="/forgetPassword">Forget Password</a>
         <br>
-        <button type="submit">Sign In</button>
+        <button id="button-trigger" type="submit">Sign In</button>
+        <br>
     </form>
+    <br>
+    <div id="notifications"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = io();
+
+        socket.on('notification', data => {
+            const divIoNotif = document.getElementById('notifications');
+            const createParagraph = document.createElement('p');
+            createParagraph.innerText = data;
+
+            divIoNotif.appendChild(createParagraph);
+        });
+
+        const buttonTrigger = document.getElementById('button-trigger');
+        buttonTrigger.addEventListener('click', () => {
+            socket.emit('sendNotification', 'Berhasil Login');
+            e.preventDefault();
+        });
+    </script>
+
 </body>
 </html>
