@@ -9,10 +9,10 @@ router.get("/login", (req,res) => {
     res.render("login");
 });
 router.get("/forgetPassword", (req,res) => {
-    const token = req.query.token;
-    if(!token){
-        return res.status(400).json({message: "token is missing", error: "Unauthorized Access"});
-    };
+    // const token = req.query.token;
+    // if(!token){
+    //     return res.status(400).json({message: "token is missing", error: "Unauthorized Access"});
+    // };
     res.render("forgetPassword");
 });
 router.get("/resetPassword", (req,res) => {

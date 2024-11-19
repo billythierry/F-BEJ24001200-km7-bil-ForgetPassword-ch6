@@ -12,7 +12,10 @@ class UserControllers {
             const {name, email, password} = req.body;
             //console.log({name, email, password}, "==> req body");
             if (!name || !email || !password) {
-                return res.status(400).json({message: "Data yang diinput tidak boleh kosong"});
+                //return res.status(400).json({message: "Data yang diinput tidak boleh kosong"});
+                const error = new Error("Data yang diinput tidak boleh kosong");
+                error.code = 404
+                throw error;
             };
             
             const cekEmail = await prisma.user.findUnique({
@@ -20,7 +23,10 @@ class UserControllers {
             });
 
             if (cekEmail) {
-                return res.status(400).json({message: "Terdapat email yang sama, silahkan masukkan email yang berbeda"});
+                //return res.status(400).json({message: "Terdapat email yang sama, silahkan masukkan email yang berbeda"});
+                const error = new Error("Email Anda sudah terdaftar, silahkan gunakan email yang lain");
+                error.code = 404
+                throw error;
             }
 
             const encryptPassword = await bcrypt.hashSync(password, 10);
@@ -39,8 +45,8 @@ class UserControllers {
             }, 3000);
         }catch (error) {
             console.log(error);
-            res.status(500).json({
-                message: "Something wrong i can feel it",
+            res.status(error.code).json({
+                message: error.message,
                 error: error.message
             });
         }
@@ -55,13 +61,23 @@ class UserControllers {
                 where:{ email: email }
             });
 
-            let cekPassword = await bcrypt.compareSync(password, findUser.password);
-
+            
             if(!findUser){
-                return res.status(404).send("Email & Password invalid");
+                //return res.status(404).json("Email & Password invalid");
+                //throw new Error('Email & Password Invalid', { statusCode: 404 })
+                const error = new Error("Email & password invalid")
+                error.code = 404
+                throw error;
             }
+
+            let cekPassword = await bcrypt.compare(password, findUser.password);
+            console.log(cekPassword, "===> cek password");
             if(!cekPassword){
-                return res.status(401).send("Email & Password invalid");
+                //("Email & Password invalid"); // dikasih throw error 
+                //throw new Error('Email & Password Invalid', { statusCode: 404 })
+                const error = new Error("Email & password invalid")
+                error.code = 404
+                throw error;
             }
 
             const accessToken = jwt.sign({
@@ -71,13 +87,15 @@ class UserControllers {
             }, SECRET_ACCESS_JWT);
             
             //res.send(`Selamat Datang ${findUser.name} Anda berhasil masuk`);
-            res.status(200).json({
-                message: `Selamat ${findUser.name}, Anda berhasil login`,
-            });
+            setTimeout(() => {
+                res.status(200).json({message: `Selamat ${findUser.name}, Anda berhasil login`,});
+            }, 3000);
         } catch (error) {
             console.log(error);
-            res.status(500).json({
-            message: "Something wrong i can feel it",
+            // error.statusCode = 404
+            // throw error
+            res.status(error.code).json({
+            message: error.message, 
             error: error.message
             });
         }
@@ -92,7 +110,10 @@ class UserControllers {
             });
 
             if (!findUser) {
-                return res.status(400).json("Nama & Email invalid");
+                // return res.status(400).json("Nama & Email invalid");
+                const error = new Error("Nama & email invalid");
+                error.code = 404
+                throw error;
             }
             const resetToken = jwt.sign({ id: findUser.id }, SECRET_ACCESS_JWT);
             const linkReset = `http://localhost:3000/resetPassword?token=${resetToken}`;
@@ -119,7 +140,10 @@ class UserControllers {
             transporter.sendMail(mailOptions, (err,info) => {
                 if (err) {
                     console.log(err, "==> ini ERR");
-                    res.status(500).json({error: "Gagal mengirim Email"});
+                    //res.status(500).json({error: "Gagal mengirim Email"});
+                    const error = new Error("Gagal mengirim email");
+                    error.code = 400
+                    throw error;
                 }
                 console.log(info.response, "===> Response info email terkirim");
                 res.status(200).json({message: "berhasil mengirim email"})
@@ -127,8 +151,9 @@ class UserControllers {
 
             res.status(200).json({message: "Konfirmasi Email berhasil, silahkan cek email Anda"});
         } catch (error) {
-            res.status(500).json({
-                message: "Something wrong i can feel it",
+            console.log(error);
+            res.status(error.code).json({
+                message: error.message,
                 error: error.message
             });
         }
@@ -137,17 +162,21 @@ class UserControllers {
     static async resetPassword(req,res){
         const { token, newPassword } = req.body;
         try {
+            console.log("billy masuk")
             const verify = jwt.verify(token, SECRET_ACCESS_JWT);
             const userId = verify.id;
-
+            console.log(verify, "===> verify");
+            console.log(userId, "==> userId");
+            
             const encryptPassword = bcrypt.hashSync(newPassword, 10);
             if(!verify){
                 res.status(400).json({message: "Token invalid"});
             }
-            await prisma.user.update({
+            const data = await prisma.user.update({
                 where: { id: userId},
                 data: {password: encryptPassword}
             });
+            
 
             console.log(data, "==> data ini berhasil ganti password");
 

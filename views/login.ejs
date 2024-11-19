@@ -10,11 +10,11 @@
     <form action="/login" method="POST">
         <label for="email">Email</label>
         <br>
-        <input type="email" name="email" placeholder="Enter email" required>
+        <input id="email" type="email" name="email" placeholder="Enter your email" required>
         <br>
         <label for="password">Password</label>
         <br>
-        <input type="password" name="password" placeholder="Enter password" required>
+        <input id="password" type="password" name="password" placeholder="Enter your password" required>
         <br>
         <br>
         <a href="/forgetPassword">Forget Password</a>
@@ -23,14 +23,17 @@
         <br>
     </form>
     <br>
-    <div id="notifications"></div>
+    <div id="login-notifications"></div>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/controllers/userControllers.js"></script>
     <script>
         let socket = io();
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
 
         socket.on('notification', data => {
-            const divIoNotif = document.getElementById('notifications');
+            const divIoNotif = document.getElementById('login-notifications');
             const createParagraph = document.createElement('p');
             createParagraph.innerText = data;
 
@@ -40,8 +43,7 @@
         const buttonTrigger = document.getElementById('button-trigger');
         buttonTrigger.addEventListener('click', () => {
             socket.emit('sendNotification', 'Berhasil Login');
-            e.preventDefault();
-        });
+    });
     </script>
 
 </body>
